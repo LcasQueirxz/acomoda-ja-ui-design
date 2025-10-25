@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Download, Eye } from "lucide-react"
+import { Search, Download, Eye, ShieldAlert, CheckCircle2 } from "lucide-react"
+import { useAppStore } from "@/lib/store"
 
 interface Reservation {
   id: string
@@ -14,9 +15,10 @@ interface Reservation {
   property: string
   checkIn: string
   checkOut: string
-  status: "confirmed" | "pending" | "cancelled" | "checked-in"
+  status: "confirmed" | "pending" | "cancelled" | "checked-in" | "blocked"
   total: number
   guest: string
+  reason?: string
 }
 
 export function ReservationsView() {
@@ -24,13 +26,15 @@ export function ReservationsView() {
   const [platformFilter, setPlatformFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
 
+  const { blockedReservations, properties } = useAppStore()
+
   const reservations: Reservation[] = [
     {
       id: "RES-001",
       platform: "booking",
-      property: "CHL1 - Chalé",
-      checkIn: "24/10/2025",
-      checkOut: "27/10/2025",
+      property: "APT_401 - Estúdio Moderno",
+      checkIn: "05/10/2025",
+      checkOut: "08/10/2025",
       status: "confirmed",
       total: 1200,
       guest: "João Silva",
@@ -38,9 +42,9 @@ export function ReservationsView() {
     {
       id: "RES-002",
       platform: "airbnb",
-      property: "CHL2 - Chalé",
-      checkIn: "25/10/2025",
-      checkOut: "28/10/2025",
+      property: "APT_401 - Estúdio Moderno",
+      checkIn: "07/10/2025",
+      checkOut: "10/10/2025",
       status: "confirmed",
       total: 1350,
       guest: "Maria Santos",
@@ -48,7 +52,7 @@ export function ReservationsView() {
     {
       id: "RES-003",
       platform: "direct",
-      property: "CHL3 - Chalé",
+      property: "CASA_JD - Casa de Praia",
       checkIn: "26/10/2025",
       checkOut: "30/10/2025",
       status: "pending",
@@ -58,7 +62,7 @@ export function ReservationsView() {
     {
       id: "RES-004",
       platform: "booking",
-      property: "CHL4 - Chalé",
+      property: "POUS_01 - Pousada Aconchego",
       checkIn: "27/10/2025",
       checkOut: "29/10/2025",
       status: "checked-in",
@@ -68,7 +72,7 @@ export function ReservationsView() {
     {
       id: "RES-005",
       platform: "airbnb",
-      property: "CHL5 - Chalé",
+      property: "APT_502 - Loft Industrial",
       checkIn: "28/10/2025",
       checkOut: "31/10/2025",
       status: "confirmed",
@@ -78,13 +82,27 @@ export function ReservationsView() {
     {
       id: "RES-006",
       platform: "booking",
-      property: "CHL6 - Chalé",
+      property: "CASA_JD - Casa de Praia",
       checkIn: "20/10/2025",
       checkOut: "22/10/2025",
       status: "cancelled",
       total: 600,
       guest: "Sofia Rodrigues",
     },
+    ...blockedReservations.map((blocked) => {
+      const property = properties.find((p) => p.id === blocked.propertyId)
+      return {
+        id: blocked.id,
+        platform: blocked.platform,
+        property: `${blocked.propertyId} - ${property?.name || "Propriedade"}`,
+        checkIn: blocked.checkIn,
+        checkOut: blocked.checkOut,
+        status: "blocked" as const,
+        total: blocked.preventedRevenue,
+        guest: blocked.guestName,
+        reason: blocked.reason,
+      }
+    }),
   ]
 
   const getPlatformBadge = (platform: string) => {
@@ -126,6 +144,13 @@ export function ReservationsView() {
             Check-in Feito
           </Badge>
         )
+      case "blocked":
+        return (
+          <Badge variant="outline" className="border-orange-500 text-orange-500 bg-orange-500/10">
+            <ShieldAlert className="w-3 h-3 mr-1" />
+            Bloqueada
+          </Badge>
+        )
       default:
         return <Badge variant="outline">Desconhecido</Badge>
     }
@@ -141,6 +166,9 @@ export function ReservationsView() {
     return matchesSearch && matchesPlatform && matchesStatus
   })
 
+  const blockedCount = reservations.filter((r) => r.status === "blocked").length
+  const preventedRevenue = reservations.filter((r) => r.status === "blocked").reduce((sum, r) => sum + r.total, 0)
+
   return (
     <div className="p-4 lg:p-6 space-y-6">
       {/* Header */}
@@ -148,6 +176,33 @@ export function ReservationsView() {
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Reservas Centralizadas</h1>
         <p className="text-muted-foreground mt-1">Gerencie todas as suas reservas em um só lugar</p>
       </div>
+
+      {blockedCount > 0 && (
+        <Card className="p-4 border-orange-500/50 bg-orange-500/5">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-orange-500/10">
+              <ShieldAlert className="w-5 h-5 text-orange-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-orange-500 mb-1">Sistema de Prevenção de Overbooking Ativo</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Nossa plataforma bloqueou automaticamente {blockedCount} tentativa(s) de reserva que causariam
+                conflitos, prevenindo R$ {preventedRevenue.toLocaleString("pt-BR")} em possíveis problemas de
+                overbooking.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-orange-500 text-orange-500 hover:bg-orange-500/10 bg-transparent"
+                onClick={() => setStatusFilter("blocked")}
+              >
+                Ver Reservas Bloqueadas
+              </Button>
+            </div>
+            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+          </div>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card className="p-4">
@@ -184,6 +239,7 @@ export function ReservationsView() {
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="checked-in">Check-in Feito</SelectItem>
               <SelectItem value="cancelled">Cancelada</SelectItem>
+              <SelectItem value="blocked">Bloqueada (Overbooking)</SelectItem>
             </SelectContent>
           </Select>
 
@@ -212,7 +268,12 @@ export function ReservationsView() {
             </thead>
             <tbody>
               {filteredReservations.map((reservation) => (
-                <tr key={reservation.id} className="border-b border-border hover:bg-muted/30 transition-colors">
+                <tr
+                  key={reservation.id}
+                  className={`border-b border-border hover:bg-muted/30 transition-colors ${
+                    reservation.status === "blocked" ? "bg-orange-500/5" : ""
+                  }`}
+                >
                   <td className="p-4 font-mono text-sm">{reservation.id}</td>
                   <td className="p-4">{getPlatformBadge(reservation.platform)}</td>
                   <td className="p-4 font-medium">{reservation.guest}</td>
@@ -220,7 +281,13 @@ export function ReservationsView() {
                   <td className="p-4 text-sm">{reservation.checkIn}</td>
                   <td className="p-4 text-sm">{reservation.checkOut}</td>
                   <td className="p-4">{getStatusBadge(reservation.status)}</td>
-                  <td className="p-4 font-semibold">R$ {reservation.total.toLocaleString("pt-BR")}</td>
+                  <td className="p-4 font-semibold">
+                    {reservation.status === "blocked" ? (
+                      <span className="text-orange-500">R$ {reservation.total.toLocaleString("pt-BR")}</span>
+                    ) : (
+                      `R$ ${reservation.total.toLocaleString("pt-BR")}`
+                    )}
+                  </td>
                   <td className="p-4">
                     <Button variant="ghost" size="sm">
                       <Eye className="w-4 h-4 mr-2" />
@@ -241,10 +308,10 @@ export function ReservationsView() {
       </Card>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="p-4">
           <p className="text-sm text-muted-foreground mb-1">Total de Reservas</p>
-          <p className="text-2xl font-bold">{reservations.length}</p>
+          <p className="text-2xl font-bold">{reservations.filter((r) => r.status !== "blocked").length}</p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-muted-foreground mb-1">Confirmadas</p>
@@ -258,10 +325,19 @@ export function ReservationsView() {
             {reservations.filter((r) => r.status === "pending").length}
           </p>
         </Card>
+        <Card className="p-4 border-orange-500/30">
+          <p className="text-sm text-muted-foreground mb-1">Bloqueadas</p>
+          <p className="text-2xl font-bold text-orange-500">{blockedCount}</p>
+          <p className="text-xs text-muted-foreground mt-1">Overbooking evitado</p>
+        </Card>
         <Card className="p-4">
           <p className="text-sm text-muted-foreground mb-1">Receita Total</p>
           <p className="text-2xl font-bold">
-            R$ {reservations.reduce((sum, r) => sum + r.total, 0).toLocaleString("pt-BR")}
+            R${" "}
+            {reservations
+              .filter((r) => r.status !== "blocked")
+              .reduce((sum, r) => sum + r.total, 0)
+              .toLocaleString("pt-BR")}
           </p>
         </Card>
       </div>

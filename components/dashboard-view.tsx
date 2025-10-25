@@ -3,14 +3,24 @@
 import { Card } from "@/components/ui/card"
 import { TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Calendar, DollarSign, Users, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAppStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
 
 export function DashboardView() {
-  // Mock data for BI metrics
+  const router = useRouter()
+  const { getConflictingReservations, setConflictFilter } = useAppStore()
+  const conflictingReservations = getConflictingReservations()
+  const conflictsCount = conflictingReservations.length
+
+  const handleConflictClick = () => {
+    setConflictFilter(true)
+    router.push("/reservas")
+  }
+
   const occupancyRate = 75
   const occupancyChange = 5
   const mrr = 45800
   const mrrChange = 12.5
-  const conflictsCount = 2
 
   const upcomingCheckIns = [
     { date: "24/10", guest: "João Silva", property: "CHL1", platform: "booking" },
@@ -26,7 +36,6 @@ export function DashboardView() {
     { platform: "Reserva Direta", revenue: 5000, percentage: 11, color: "bg-emerald-500" },
   ]
 
-  // Mock heatmap data (simplified - showing occupancy by week)
   const seasonalityData = [
     { week: "Sem 1", occupancy: 65 },
     { week: "Sem 2", occupancy: 72 },
@@ -51,7 +60,10 @@ export function DashboardView() {
       </div>
 
       {conflictsCount > 0 ? (
-        <Card className="p-6 lg:p-8 bg-gradient-to-br from-red-500/20 to-red-500/10 border-red-500/50 shadow-lg shadow-red-500/20">
+        <Card
+          className="p-6 lg:p-8 bg-gradient-to-br from-red-500/20 to-red-500/10 border-red-500/50 shadow-lg shadow-red-500/20 cursor-pointer hover:shadow-xl transition-all"
+          onClick={handleConflictClick}
+        >
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 animate-pulse">
               <AlertCircle className="w-8 h-8 text-white" />
@@ -61,7 +73,7 @@ export function DashboardView() {
                 RISCO CRÍTICO: {conflictsCount} RESERVAS EM CONFLITO!
               </h2>
               <p className="text-sm text-muted-foreground">
-                Detectamos sobreposição de reservas. Ação imediata necessária para evitar overbooking.
+                Detectamos sobreposição de reservas. Clique para revisar e resolver.
               </p>
             </div>
             <Button variant="destructive" size="lg" className="flex-shrink-0">
@@ -78,7 +90,7 @@ export function DashboardView() {
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-emerald-500 mb-1">STATUS OK - Sincronização Ativa</h2>
               <p className="text-sm text-muted-foreground">
-                Todas as 12 propriedades estão sincronizadas. Nenhum conflito detectado.
+                Todas as propriedades estão sincronizadas. Nenhum conflito detectado.
               </p>
             </div>
           </div>
@@ -155,7 +167,7 @@ export function DashboardView() {
           ) : (
             <div>
               <h3 className="text-3xl font-bold text-red-500 mb-2">{conflictsCount} Conflitos</h3>
-              <Button variant="destructive" size="sm">
+              <Button variant="destructive" size="sm" onClick={handleConflictClick}>
                 Resolver Agora
               </Button>
             </div>

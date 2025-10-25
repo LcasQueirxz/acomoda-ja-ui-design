@@ -1,11 +1,33 @@
 "use client"
 
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Calendar, TrendingUp, Users, DollarSign, Bell, ArrowRight, Wifi, WifiOff } from "lucide-react"
+import { useAppStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
+import { ServiceScheduleDialog } from "@/components/service-schedule-dialog"
 
 export function ControlPanelView() {
+  const router = useRouter()
+  const { getConflictingReservations, setConflictFilter } = useAppStore()
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false)
+  const [selectedService, setSelectedService] = useState<"cleaning" | "maintenance" | null>(null)
+
+  const conflictingReservations = getConflictingReservations()
+  const conflictsCount = conflictingReservations.length
+
+  const handleConflictClick = () => {
+    setConflictFilter(true)
+    router.push("/reservas")
+  }
+
+  const handleScheduleService = (serviceType: "cleaning" | "maintenance") => {
+    setSelectedService(serviceType)
+    setServiceDialogOpen(true)
+  }
+
   const todayTasks = [
     { id: 1, type: "check-in", guest: "Maria Santos", property: "APT_401 - Estúdio Moderno", time: "14:00" },
     { id: 2, type: "check-out", guest: "João Silva", property: "CASA_JD - Casa de Praia", time: "11:00" },
@@ -37,9 +59,9 @@ export function ControlPanelView() {
   ]
 
   const syncStatus = {
-    isActive: false,
-    lastSync: "2 horas atrás",
-    failedPlatforms: ["Booking.com"],
+    isActive: conflictsCount === 0,
+    lastSync: "2 minutos atrás",
+    failedPlatforms: conflictsCount > 0 ? ["Booking.com"] : [],
   }
 
   return (
@@ -52,11 +74,12 @@ export function ControlPanelView() {
 
       {/* OTA Sync Status Widget */}
       <Card
-        className={`p-4 ${syncStatus.isActive ? "bg-emerald-500/10 border-emerald-500/30" : "bg-red-500/10 border-red-500/30"}`}
+        className={`p-4 cursor-pointer hover:shadow-lg transition-all ${syncStatus.isActive ? "bg-emerald-500/10 border-emerald-500/30" : "bg-red-500/10 border-red-500/30"}`}
+        onClick={!syncStatus.isActive ? handleConflictClick : undefined}
       >
         <div className="flex items-center gap-3">
           <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center ${syncStatus.isActive ? "bg-emerald-500" : "bg-red-500"}`}
+            className={`w-10 h-10 rounded-lg flex items-center justify-center ${syncStatus.isActive ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`}
           >
             {syncStatus.isActive ? <Wifi className="w-5 h-5 text-white" /> : <WifiOff className="w-5 h-5 text-white" />}
           </div>
@@ -65,12 +88,12 @@ export function ControlPanelView() {
             <p className="text-xs text-muted-foreground">
               {syncStatus.isActive
                 ? "Todas as plataformas conectadas"
-                : `${syncStatus.failedPlatforms.join(", ")} - Última sincronização ${syncStatus.lastSync}`}
+                : `${conflictsCount} conflitos detectados - Clique para revisar`}
             </p>
           </div>
           {!syncStatus.isActive && (
             <Button variant="destructive" size="sm">
-              Reconectar
+              Revisar Agora
             </Button>
           )}
         </div>
@@ -166,9 +189,27 @@ export function ControlPanelView() {
             ))}
           </div>
 
-          <Button variant="outline" className="w-full mt-4 bg-transparent">
-            Ver Todas as Tarefas
-          </Button>
+          <div className="mt-4 pt-4 border-t border-border space-y-2">
+            <p className="text-sm font-medium mb-2">Agendar Serviços</p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 bg-transparent"
+                onClick={() => handleScheduleService("cleaning")}
+              >
+                Agendar Limpeza
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 bg-transparent"
+                onClick={() => handleScheduleService("maintenance")}
+              >
+                Agendar Manutenção
+              </Button>
+            </div>
+          </div>
         </Card>
 
         {/* System Notifications */}
@@ -245,6 +286,12 @@ export function ControlPanelView() {
           </div>
         </div>
       </Card>
+
+      <ServiceScheduleDialog
+        open={serviceDialogOpen}
+        onOpenChange={setServiceDialogOpen}
+        serviceType={selectedService}
+      />
     </div>
   )
 }

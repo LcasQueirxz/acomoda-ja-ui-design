@@ -1,84 +1,29 @@
 "use client"
 
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, MapPin, Calendar, TrendingUp } from "lucide-react"
-
-interface Property {
-  id: string
-  name: string
-  type: string
-  address: string
-  platforms: ("booking" | "airbnb")[]
-  occupancyRate: number
-  monthlyRevenue: number
-  image: string
-}
+import { Plus, MapPin, TrendingUp, Edit, Trash2 } from "lucide-react"
+import { useAppStore } from "@/lib/store"
+import { NewPropertyDialog } from "@/components/new-property-dialog"
+import { EditPropertyDialog } from "@/components/edit-property-dialog"
 
 export function PropertiesView() {
-  const properties: Property[] = [
-    {
-      id: "APT_401",
-      name: "Estúdio Moderno",
-      type: "Apartamento",
-      address: "Av. Paulista, 1000 - Centro, São Paulo - SP",
-      platforms: ["booking", "airbnb"],
-      occupancyRate: 85,
-      monthlyRevenue: 3500,
-      image: "/modern-studio-apartment-interior-s-o-paulo.jpg",
-    },
-    {
-      id: "CASA_JD",
-      name: "Casa de Praia Exclusiva",
-      type: "Casa",
-      address: "Rua das Ondas, 45 - Praia do Forte, BA",
-      platforms: ["booking", "airbnb"],
-      occupancyRate: 78,
-      monthlyRevenue: 5800,
-      image: "/luxury-beach-house-brazil-northeast-coast.jpg",
-    },
-    {
-      id: "POUS_01",
-      name: "Pousada Boutique Serra",
-      type: "Pousada",
-      address: "Estrada do Vale, 234 - Gramado, RS",
-      platforms: ["booking"],
-      occupancyRate: 72,
-      monthlyRevenue: 4200,
-      image: "/boutique-inn-mountain-serra-ga-cha.jpg",
-    },
-    {
-      id: "EST_MOD",
-      name: "Estúdio Compacto Premium",
-      type: "Apartamento",
-      address: "Rua Augusta, 567 - Jardins, São Paulo - SP",
-      platforms: ["airbnb"],
-      occupancyRate: 90,
-      monthlyRevenue: 2900,
-      image: "/compact-modern-studio-apartment-upscale-neighborho.jpg",
-    },
-    {
-      id: "CASA_PR",
-      name: "Casa Colonial Centro Histórico",
-      type: "Casa",
-      address: "Rua do Comércio, 89 - Centro, Paraty - RJ",
-      platforms: ["booking", "airbnb"],
-      occupancyRate: 68,
-      monthlyRevenue: 4800,
-      image: "/colonial-house-historic-center-paraty-brazil.jpg",
-    },
-    {
-      id: "APT_LUX",
-      name: "Apartamento Vista Mar",
-      type: "Apartamento",
-      address: "Av. Atlântica, 1200 - Copacabana, Rio de Janeiro - RJ",
-      platforms: ["booking"],
-      occupancyRate: 82,
-      monthlyRevenue: 6200,
-      image: "/luxury-apartment-ocean-view-copacabana-rio.jpg",
-    },
-  ]
+  const { properties, deleteProperty, setSelectedProperty } = useAppStore()
+  const [newPropertyDialogOpen, setNewPropertyDialogOpen] = useState(false)
+  const [editPropertyDialogOpen, setEditPropertyDialogOpen] = useState(false)
+
+  const handleEdit = (property: any) => {
+    setSelectedProperty(property)
+    setEditPropertyDialogOpen(true)
+  }
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir esta propriedade?")) {
+      deleteProperty(id)
+    }
+  }
 
   const getPlatformIcon = (platform: "booking" | "airbnb") => {
     if (platform === "booking") {
@@ -95,7 +40,7 @@ export function PropertiesView() {
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Propriedades</h1>
           <p className="text-muted-foreground mt-1">Gerencie seus imóveis e integrações</p>
         </div>
-        <Button>
+        <Button onClick={() => setNewPropertyDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Propriedade
         </Button>
@@ -151,7 +96,9 @@ export function PropertiesView() {
 
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span className="text-xs">{property.address}</span>
+                <span className="text-xs">
+                  {property.address}, {property.city} - {property.state}
+                </span>
               </div>
 
               <div className="pt-3 border-t border-border space-y-2">
@@ -166,21 +113,38 @@ export function PropertiesView() {
                   <span className="text-muted-foreground">Receita Mensal</span>
                   <span className="font-semibold">R$ {property.monthlyRevenue.toLocaleString("pt-BR")}</span>
                 </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Tarifa Base</span>
+                  <span className="font-semibold">R$ {property.baseRate}/noite</span>
+                </div>
               </div>
 
               <div className="pt-3 flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Calendário
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 bg-transparent"
+                  onClick={() => handleEdit(property)}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
                   Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-transparent"
+                  onClick={() => handleDelete(property.id)}
+                >
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </Card>
         ))}
       </div>
+
+      <NewPropertyDialog open={newPropertyDialogOpen} onOpenChange={setNewPropertyDialogOpen} />
+      <EditPropertyDialog open={editPropertyDialogOpen} onOpenChange={setEditPropertyDialogOpen} />
     </div>
   )
 }

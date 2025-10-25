@@ -1,11 +1,18 @@
 "use client"
 
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Settings, CheckCircle2, AlertCircle, Plus, ExternalLink } from "lucide-react"
+import { Settings, CheckCircle2, AlertCircle, Plus, ExternalLink, RefreshCw } from "lucide-react"
+import { IntegrationConfigDialog } from "@/components/integration-config-dialog"
+import { NewIntegrationDialog } from "@/components/new-integration-dialog"
 
 export function IntegrationsView() {
+  const [configDialogOpen, setConfigDialogOpen] = useState(false)
+  const [newIntegrationDialogOpen, setNewIntegrationDialogOpen] = useState(false)
+  const [selectedIntegration, setSelectedIntegration] = useState<any>(null)
+
   const integrations = [
     {
       id: 1,
@@ -15,6 +22,7 @@ export function IntegrationsView() {
       lastSync: "2 minutos atrás",
       properties: 6,
       color: "blue",
+      apiKey: "bk_live_***************",
     },
     {
       id: 2,
@@ -24,6 +32,7 @@ export function IntegrationsView() {
       lastSync: "5 minutos atrás",
       properties: 5,
       color: "pink",
+      apiKey: "ab_live_***************",
     },
     {
       id: 3,
@@ -33,6 +42,7 @@ export function IntegrationsView() {
       lastSync: "Nunca",
       properties: 0,
       color: "yellow",
+      apiKey: "",
     },
   ]
 
@@ -44,6 +54,25 @@ export function IntegrationsView() {
     { id: 5, integration: "Booking.com", action: "Erro na sincronização", status: "error", time: "2 horas atrás" },
   ]
 
+  const handleConfigure = (integration: any) => {
+    setSelectedIntegration(integration)
+    setConfigDialogOpen(true)
+  }
+
+  const handleTestConnection = (integrationName: string) => {
+    alert(`Testando conexão com ${integrationName}...`)
+    setTimeout(() => {
+      alert(`✓ Conexão com ${integrationName} estabelecida com sucesso!`)
+    }, 1000)
+  }
+
+  const handleForceSync = (integrationName: string) => {
+    alert(`Forçando sincronização com ${integrationName}...`)
+    setTimeout(() => {
+      alert(`✓ Sincronização com ${integrationName} concluída!`)
+    }, 1500)
+  }
+
   return (
     <div className="p-4 lg:p-6 space-y-6">
       {/* Header */}
@@ -52,7 +81,7 @@ export function IntegrationsView() {
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Integrações</h1>
           <p className="text-muted-foreground mt-1">Configuração de OTAs e APIs</p>
         </div>
-        <Button>
+        <Button onClick={() => setNewIntegrationDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Integração
         </Button>
@@ -97,15 +126,37 @@ export function IntegrationsView() {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                <Settings className="w-4 h-4 mr-2" />
-                Configurar
-              </Button>
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                API Key
-              </Button>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 bg-transparent"
+                  onClick={() => handleConfigure(integration)}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Configurar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-transparent"
+                  onClick={() => handleTestConnection(integration.name)}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </div>
+              {integration.status === "active" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full bg-transparent"
+                  onClick={() => handleForceSync(integration.name)}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Forçar Sincronização
+                </Button>
+              )}
             </div>
           </Card>
         ))}
@@ -135,6 +186,13 @@ export function IntegrationsView() {
           ))}
         </div>
       </Card>
+
+      <IntegrationConfigDialog
+        open={configDialogOpen}
+        onOpenChange={setConfigDialogOpen}
+        integration={selectedIntegration}
+      />
+      <NewIntegrationDialog open={newIntegrationDialogOpen} onOpenChange={setNewIntegrationDialogOpen} />
     </div>
   )
 }
