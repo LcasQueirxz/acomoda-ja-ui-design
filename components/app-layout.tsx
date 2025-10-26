@@ -74,12 +74,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div>
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Geral</div>
             <div className="space-y-1">
-              <Link href="/painel-controle">
-                <NavItem icon={LayoutDashboard} label="Painel de Controle" />
-              </Link>
-              <Link href="/paginas">
-                <NavItem icon={FileText} label="Páginas" />
-              </Link>
+              <NavItem href="/painel-controle" icon={LayoutDashboard} label="Painel de Controle" />
+              <NavItem href="/paginas" icon={FileText} label="Páginas" />
 
               {/* Análise - Expandable */}
               <div>
@@ -94,21 +90,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
                 {analyticsOpen && (
                   <div className="ml-7 mt-1 space-y-1 border-l border-border pl-3">
-                    <Link href="/analise">
-                      <SubNavItem icon={BarChart3} label="Relatórios" />
-                    </Link>
-                    <Link href="/analise/clientes">
-                      <SubNavItem icon={Users} label="Clientes" />
-                    </Link>
-                    <Link href="/analise/publico">
-                      <SubNavItem icon={UsersRound} label="Público" badge="NOVO" />
-                    </Link>
-                    <Link href="/analise/pagamentos">
-                      <SubNavItem icon={DollarSign} label="Pagamentos" />
-                    </Link>
-                    <Link href="/analise/fluxos">
-                      <SubNavItem icon={Workflow} label="Fluxos de Trabalho" />
-                    </Link>
+                    <SubNavItem href="/analise" icon={BarChart3} label="Relatórios" />
+                    <SubNavItem href="/analise/clientes" icon={Users} label="Clientes" />
+                    <SubNavItem href="/analise/publico" icon={UsersRound} label="Público" badge="NOVO" />
+                    <SubNavItem href="/analise/pagamentos" icon={DollarSign} label="Pagamentos" />
+                    <SubNavItem href="/analise/fluxos" icon={Workflow} label="Fluxos de Trabalho" />
                   </div>
                 )}
               </div>
@@ -118,32 +104,22 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Vendas Section */}
           <div>
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Vendas</div>
-            <Link href="/vendas">
-              <NavItem icon={ShoppingCart} label="Vendas" count={118} />
-            </Link>
+            <NavItem href="/vendas" icon={ShoppingCart} label="Vendas" count={118} />
           </div>
 
           {/* Integrações Section */}
           <div>
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Integrações</div>
-            <Link href="/integracoes">
-              <NavItem icon={Grid3x3} label="Integrações" />
-            </Link>
+            <NavItem href="/integracoes" icon={Grid3x3} label="Integrações" />
           </div>
 
           {/* Outros Section */}
           <div>
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Outros</div>
             <div className="space-y-1">
-              <Link href="/mensagens">
-                <NavItem icon={MessageSquare} label="Mensagens" count={24} />
-              </Link>
-              <Link href="/downloads">
-                <NavItem icon={Download} label="Downloads" />
-              </Link>
-              <Link href="/declaracao">
-                <NavItem icon={FileCheck} label="Declaração" />
-              </Link>
+              <NavItem href="/mensagens" icon={MessageSquare} label="Mensagens" count={24} />
+              <NavItem href="/downloads" icon={Download} label="Downloads" />
+              <NavItem href="/declaracao" icon={FileCheck} label="Declaração" />
             </div>
           </div>
         </nav>
@@ -208,39 +184,49 @@ export function AppLayout({ children }: AppLayoutProps) {
 }
 
 function NavItem({
+  href,
   icon: Icon,
   label,
   count,
 }: {
+  href: string
   icon: React.ElementType
   label: string
   count?: number
 }) {
   return (
-    <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm font-medium transition-colors">
+    <Link
+      href={href}
+      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm font-medium transition-colors"
+    >
       <Icon className="w-4 h-4" />
       <span className="flex-1 text-left">{label}</span>
       {count && <span className="text-xs font-semibold text-muted-foreground">{count}</span>}
-    </button>
+    </Link>
   )
 }
 
 function SubNavItem({
+  href,
   icon: Icon,
   label,
   badge,
 }: {
+  href: string
   icon: React.ElementType
   label: string
   badge?: string
 }) {
   return (
-    <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm transition-colors">
+    <Link
+      href={href}
+      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm transition-colors"
+    >
       <Icon className="w-4 h-4" />
       <span className="flex-1 text-left">{label}</span>
       {badge && (
         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{badge}</span>
       )}
-    </button>
+    </Link>
   )
 }
