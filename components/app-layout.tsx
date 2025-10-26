@@ -22,20 +22,8 @@ import {
   UsersRound,
   DollarSign,
   Workflow,
-  Bell,
-  Settings,
 } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -56,36 +44,26 @@ export function AppLayout({ children }: AppLayoutProps) {
       <aside
         className={`${
           sidebarOpen ? "w-64" : "w-0 lg:w-20"
-        } transition-all duration-300 bg-card flex flex-col overflow-hidden fixed lg:relative h-full z-50 ${
+        } transition-all duration-300 border-r border-border bg-card flex flex-col overflow-hidden fixed lg:relative h-full z-50 ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 relative overflow-hidden shadow-lg shadow-primary/20">
-              <Image
-                src="/acomoda-ja-logo.png"
-                alt="AcomodaJá"
-                width={40}
-                height={40}
-                className="object-contain scale-110"
-              />
+        <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">A</span>
             </div>
-            {sidebarOpen && (
-              <span className="font-bold text-xl whitespace-nowrap bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                AcomodaJá
-              </span>
-            )}
+            {sidebarOpen && <span className="font-semibold text-lg whitespace-nowrap">AcomodaJá</span>}
           </div>
         </div>
 
         {/* Search */}
         {sidebarOpen && (
-          <div className="p-4 flex-shrink-0">
+          <div className="p-4 border-b border-border flex-shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Buscar..." className="pl-9 bg-background/50 border-0" />
+              <Input placeholder="Buscar..." className="pl-9 bg-background border-border" />
             </div>
           </div>
         )}
@@ -174,7 +152,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-card/50 backdrop-blur-sm flex items-center px-4 lg:px-6 gap-4 lg:gap-6 flex-shrink-0">
+        <header className="h-16 border-b border-border bg-card flex items-center px-4 lg:px-6 gap-4 lg:gap-6 flex-shrink-0">
           <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden">
             <Menu className="w-5 h-5" />
           </Button>
@@ -213,65 +191,12 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Link>
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
-            {/* Notifications */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
-                <DropdownMenuLabel>Notificações</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="max-h-96 overflow-y-auto">
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                    <div className="font-medium text-sm">Nova reserva confirmada</div>
-                    <div className="text-xs text-muted-foreground">APT_401 - Check-in em 2 dias</div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                    <div className="font-medium text-sm">Limpeza agendada</div>
-                    <div className="text-xs text-muted-foreground">CASA_JD - Amanhã às 10h</div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                    <div className="font-medium text-sm">Sincronização concluída</div>
-                    <div className="text-xs text-muted-foreground">Booking.com - 3 novas reservas</div>
-                  </DropdownMenuItem>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* User Profile */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                    <AvatarImage src="/placeholder-user.png" alt="User" />
-                    <AvatarFallback className="bg-primary text-primary-foreground font-semibold">LQ</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Lucas Queiroz</p>
-                    <p className="text-xs leading-none text-muted-foreground">lucas@acomodaja.com</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Users className="mr-2 h-4 w-4" />
-                  <span>Perfil</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Configurações</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">Sair</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="ml-auto flex items-center gap-4">
+            <Button variant="ghost" size="icon">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground text-xs font-medium">U</span>
+              </div>
+            </Button>
           </div>
         </header>
 
